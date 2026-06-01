@@ -1,52 +1,49 @@
 #!/bin/bash
 
-if ( ! test -z {,} ); then
-    echo "Script must be run with sudo bash"
-    exit 1;
+if [ "$(id -u)" != '0' ]; then
+    echo "Run this script as root! Use: sudo bash script.sh"
+    exit 1
 fi
 
-if [ -e /opt/google/containers/android/system.original.img ]; then
-    echo "Removing Cranberry."
-    echo " "
-    rm /opt/google/containers/android/system.raw.img
-    mv /opt/google/containers/android/system.original.img /opt/google/containers/android/system.raw.img
+android_vm_dir="/opt/google/vms/android"
+wdir="/usr/local/cranberry_vm"
+
+# Clean up mounts safely if they are still attached
+if mountpoint -q "$wdir/new"; then
+    echo "Unmounting active workspace copy..."
+    umount -l "$wdir/new"
+fi
+
+if mountpoint -q "$wdir/original"; then
+    echo "Unmounting original copy..."
+    umount -l "$wdir/original"
+fi
+
+# Check for the ARCVM backup image
+if [ -e "$android_vm_dir/system.original.img" ]; then
+    echo "Restoring original ARCVM system image..."
+    rm -f "$android_vm_dir/system.raw.img"
+    mv "$android_vm_dir/system.original.img" "$android_vm_dir/system.raw.img"
+    chmod 0644 "$android_vm_dir/system.raw.img"
     
+    # Clean up SELinux policy backups if present (ARCVM specific paths vary by ChromeOS build)
     if [ -e /etc/selinux/arc/policy/policy.30.bak ]; then
         cp /etc/selinux/arc/policy/policy.30.bak /etc/selinux/arc/policy/policy.30
         rm /etc/selinux/arc/policy/policy.30.bak
     fi
-    
-    rm -rf /usr/local/bak
-    
-    if [ -e /usr/local/cranberry/new/init.rc ]; then
-        echo "Image is mounted on /usr/local/cranberry/new/"
-        echo "Please reboot after running cranberry or unmount the image to prevent this from causing damage."
-        exit 1
-    fi
-    
-    if [ -e /usr/local/cranberry/original/init.rc ]; then
-        echo "Image is mounted on /usr/local/cranberry/original/"
-        echo "Please reboot after running cranberry or unmount the image manually."
-        exit 1
-    fi
-    
-    rm -rf /usr/local/cranberry
-    rm /etc/init/unforce.conf
-    rm /usr/local/bin/busybox
-    
-    echo "Now reboot and everything will be right as rain!"
-    echo " "
-    
-else
-    echo "Cranberry does not appear to be set up... Will clean up extra files anyways."
-    echo " "
-    
-    rm -rf /usr/local/bak
-    rm -rf /usr/local/cranberry
-    rm /etc/init/unforce.conf
-    rm /usr/local/bin/busybox
-    
-    echo "All done."
-    echo " "
 
+    echo "Cleaning workspace files..."
+    rm -rf /usr/local/bak
+    rm -rf "$wdir"
+    rm -f /usr/local/bin/busybox
+    rm -f /etc/init/unforce.conf
+    
+    echo "Revert complete! Please reboot your Chromebook for changes to take effect."
+else
+    echo "Original ARCVM backup image not found. Cleaning up workspace directories anyway..."
+    rm -rf /usr/local/bak
+    rm -rf "$wdir"
+    rm -f /usr/local/bin/busybox
+    rm -f /etc/init/unforce.conf
+    echo "Cleanup finished."
 fi
