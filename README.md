@@ -15,7 +15,7 @@ To use it locally, save the cranberry.sh file to your Downloads folder, then cop
 
 To use it directly, copy and paste the following in crosh: 
 
-`curl https://raw.githubusercontent.com/CerisWhite/CrAnberry/main/cranberry.sh | sudo bash`
+`curl https://raw.githubusercontent.com/sammybazzoni/CrAnberry/refs/heads/main/cranberry.sh | sudo bash`
 
 This will generate an image at `/usr/local/cranberry` named "system.rooted.img" and symlink it to `/opt/google/containers/android/system.raw.img`
 
