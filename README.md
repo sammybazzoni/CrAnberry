@@ -1,5 +1,5 @@
 # CrAnberry
-Rooting the ChromeOS Android Subsystem post v77
+Rooting the ChromeOS Android Subsystem android 13
 
 **WARNING: The Android Subsystem in newer versions of ChromeOS seems to have been updated to Android 10, and this script may not work anymore. I do not have a recent device with access to the subsystem, so please open an issue and we can work on it together if this is the case!!**
 
